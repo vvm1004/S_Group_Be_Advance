@@ -18,7 +18,9 @@ app.get('/api/check', (req: Request, res: Response) => {
     res.send('Thành công');
 });
 
-app.use(errorHandler);
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+    errorHandler(err, req, res, next);
+});
 
 (async () => {
     try {

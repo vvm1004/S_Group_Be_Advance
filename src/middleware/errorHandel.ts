@@ -1,4 +1,6 @@
-const errorHandler = (err, req, res, next) => {
+import { Request, Response, NextFunction } from 'express';
+
+const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.log('ERROR LOG ', new Date().toLocaleString());
   console.log('Request:', req.method, req.originalUrl);
   console.log('Params:', req.params);
@@ -8,13 +10,12 @@ const errorHandler = (err, req, res, next) => {
   console.log('--------------------------------------------------------------------------------------');
 
   const messageError = err.messageObject || err.message;
-  // create format error response
-  const error = {
+  const errorResponse = {
     status: err.status || 400,
     error: messageError
   };
-  const status = err.status || 400;
 
-  return res.status(status).json(error);
+  return res.status(errorResponse.status).json(errorResponse);
 };
+
 export default errorHandler;

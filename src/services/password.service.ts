@@ -5,11 +5,11 @@ class PasswordService {
         return crypto.randomBytes(16).toString('hex');
     }
 
-    hashPassword(password, salt) {
+    hashPassword(password: string, salt: string) {
         return crypto.createHmac('sha256', salt).update(password).digest('hex');
     }
 
-    verifyPassword(inputPassword, salt, storedPasswordHash) {
+    verifyPassword(inputPassword: string, salt: string, storedPasswordHash: string) {
         const inputPasswordHash = this.hashPassword(inputPassword, salt);
         return inputPasswordHash === storedPasswordHash;
     }

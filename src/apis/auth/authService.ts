@@ -6,8 +6,6 @@ import crypto from 'crypto';
 import MailService from '../../services/mail.service.ts';
 import { User } from '../../types'
 
-const SECRET_KEY = process.env.SECRET_KEY as string;
-
 
 class AuthService {
     async register(user: User): Promise<string> {
@@ -63,7 +61,7 @@ class AuthService {
     }
 
     generateToken(payload: object): string {
-        return jwt.sign(payload, SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
+        return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
     }
 }
 

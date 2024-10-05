@@ -1,3 +1,6 @@
+import { Request } from "express";
+import { JwtPayload } from "jsonwebtoken";
+
 export interface User {
     id?: number;
     name: string;
@@ -17,4 +20,8 @@ export interface Role {
     name: string;
     description: string;
     isActive: boolean;
+}
+
+export interface CustomeRequest extends Request {
+    user?: string | JwtPayload;
 }
