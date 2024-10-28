@@ -25,19 +25,19 @@ class UserController {
         }
     }
 
-    async createUser(req: Request, res: Response): Promise<void> {
-        try {
-            const newUser = req.body;
-            const userId = await userService.createUser(newUser);
-            res.status(201).json({ message: 'User created successfully', id: userId });
-        } catch (error) {
-            if (error.message === 'Username already exists' || error.message === 'Email already exists') {
-                res.status(400).json({ message: 'Username or email already exists' });
-            } else {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    }
+    // async createUser(req: Request, res: Response): Promise<void> {
+    //     try {
+    //         const newUser = req.body;
+    //         const user = await userService.createUser(newUser);
+    //         res.status(201).json({ message: 'User created successfully' });
+    //     } catch (error) {
+    //         if (error.message === 'Username already exists' || error.message === 'Email already exists') {
+    //             res.status(400).json({ message: 'Username or email already exists' });
+    //         } else {
+    //             res.status(500).json({ message: error.message });
+    //         }
+    //     }
+    // }
 
     async updateUser(req: Request, res: Response): Promise<void> {
         try {

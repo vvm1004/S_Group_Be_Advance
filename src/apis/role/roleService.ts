@@ -1,54 +1,59 @@
-import RoleModel from '../../models/roleModel.ts';
-import { User, Role } from '../../types'
+import { AppDataSource } from "../../database/typeorm.config.ts";
+import { Role } from '../../models/entities/Role.ts';
+import { Permission } from '../../models/entities/Permission.ts';
+import { User } from "../../models/entities/User.ts";
 
-class RoleService {
-    async createRole(role: Role): Promise<number> {
-        const existingRoleName = await RoleModel.getRoleByName(role.name);
-        if (existingRoleName) {
-            throw new Error('Role Name already exists');
-        }
-        return await RoleModel.createRole(role);
-    }
+const roleRepository = AppDataSource.getRepository(Role);
 
-    async getAllRoles(): Promise<Role[]> {
-        try {
-            return await RoleModel.getAllRoles();
-        } catch (error: any) {
-            throw new Error('Error in RoleService.getAllRoles: ' + error.message);
-        }
-    }
+export const createRole = async (name: string) => {
+   const existingRole = await roleRepository.findOne({ where: { name } });
+  
+  if (existingRole) {
+    throw new Error(`Role with name "${name}" already exists.`);
+  }
+  const role = roleRepository.create({ name });
+  return roleRepository.save(role);
+};
 
-    async getRoleById(id: number): Promise<Role> {
-        const role = await RoleModel.getRoleById(id);
-        if (!role) throw new Error('Role not found');
-        return role;
-    }
+export const assignPermissionToRole = async (roleId: number, permissionId: number) => {
+  const permissionRepository = AppDataSource.getRepository(Permission);
 
-    async updateRole(id: number, role: Partial<Role>): Promise<void> {
-        try {
-            await RoleModel.updateRole(id, role);
-        } catch (error: any) {
-            throw new Error('Error in RoleService.updateRole: ' + error.message);
-        }
-    }
+  const role = await roleRepository.findOne({
+    where: { id: roleId },
+    relations: ['permissions']  
+  });
 
-    async deleteRole(id: number): Promise<void> {
-        try {
-            const role = await RoleModel.getRoleById(id);
-            if (!role) throw new Error('Role not found');
-            await RoleModel.deleteRole(id);
-        } catch (error: any) {
-            throw new Error('Error in RoleService.deleteRole: ' + error.message);
-        }
-    }
+  const permission = await permissionRepository.findOne({
+    where: { id: permissionId }
+  });
 
-    async getUsersByRole(id: number): Promise<User[]> {
-        try {
-            return await RoleModel.getUsersByRole(id);
-        } catch (error: any) {
-            throw new Error('Error in RoleService.getUsersByRole: ' + error.message);
-        }
-    }
-}
+  if (role && permission) {
+    role.permissions.push(permission);
+    return roleRepository.save(role);
+  }
 
-export default new RoleService();
+  throw new Error('Role or Permission not found');
+};
+
+
+export const assignRoleToUser = async (userId: number, roleId: number) => {
+  const userRepository = AppDataSource.getRepository(User);
+
+  const user = await userRepository.findOne({ where: { id: userId }, relations: ['roles'] });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const role = await roleRepository.findOne({ where: { id: roleId } });
+  if (!role) {
+    throw new Error('Role not found');
+  }
+
+  if (!user.roles) {
+    user.roles = [];
+  }
+
+
+  user.roles.push(role);
+  return userRepository.save(user);
+};

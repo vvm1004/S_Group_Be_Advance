@@ -10,7 +10,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   },
   "ts-node": {
     "esm": true

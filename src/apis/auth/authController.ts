@@ -2,19 +2,19 @@ import { Request, Response } from 'express';
 import AuthService from '../auth/authService.ts';
 
 class AuthController {
-    async register(req: Request, res: Response): Promise<void> {
-        try {
-            const user = req.body;
-            const token = await AuthService.register(user);
-            res.status(201).json({ success: true, token });
-        } catch (error: any) {
-            if (error.message === 'User already exists') {
-                res.status(409).json({ success: false, message: 'Username or email already exists' });
-            } else {
-                res.status(500).json({ success: false, message: 'Internal Service Error' });
-            }
-        }
-    }
+    // async register(req: Request, res: Response): Promise<void> {
+    //     try {
+    //         const user = req.body;
+    //         const token = await AuthService.register(user);
+    //         res.status(201).json({ success: true, token });
+    //     } catch (error: any) {
+    //         if (error.message === 'User already exists') {
+    //             res.status(409).json({ success: false, message: 'Username or email already exists' });
+    //         } else {
+    //             res.status(500).json({ success: false, message: 'Internal Service Error' });
+    //         }
+    //     }
+    // }
 
     async login(req: Request, res: Response): Promise<void> {
         try {
@@ -25,6 +25,7 @@ class AuthController {
             if (error.message === 'User not found' || error.message === 'Invalid password') {
                 res.status(401).json({ success: false, message: 'Invalid username or password' });
             } else {
+                console.log(error)
                 res.status(500).json({ success: false, message: 'Internal Service Error' });
             }
         }

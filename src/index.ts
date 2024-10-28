@@ -3,6 +3,8 @@ import { connection } from './database/config.ts';
 import routers from './apis/index.ts';
 import errorHandler from './middleware/errorHandel.ts';
 import dotenv from 'dotenv';
+import "reflect-metadata";
+import { AppDataSource } from "./database/typeorm.config.ts";
 
 dotenv.config();
 
@@ -22,15 +24,27 @@ app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
     errorHandler(err, req, res, next);
 });
 
-(async () => {
-    try {
-        await connection.getConnection();
-        console.log('Database connection successful');
-    } catch (error) {
-        console.error('Database connection failed:', error);
-    }
+// (async () => {
+//     try {
+//         await connection.getConnection();
+//         console.log('Database connection successful');
+//     } catch (error) {
+//         console.error('Database connection failed:', error);
+//     }
 
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+//     app.listen(PORT, () => {
+//         console.log(`Server is running on port ${PORT}`);
+//     });
+// })();
+
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!");
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization:", err);
     });
-})();
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+

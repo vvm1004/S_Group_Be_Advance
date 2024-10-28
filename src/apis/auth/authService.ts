@@ -8,20 +8,20 @@ import { User } from '../../types'
 
 
 class AuthService {
-    async register(user: User): Promise<string> {
-        const existingUser = await UserModel.getUserByUserName(user.username);
-        if (existingUser) {
-            throw new Error('User already exists');
-        }
+    // async register(user: User): Promise<string> {
+    //     const existingUser = await UserModel.getUserByUserName(user.username);
+    //     if (existingUser) {
+    //         throw new Error('User already exists');
+    //     }
 
-        const salt = PasswordService.generateSalt();
-        const hashedPassword = PasswordService.hashPassword(user.password, salt);
-        user.password = hashedPassword;
-        user.salt = salt;
+    //     const salt = PasswordService.generateSalt();
+    //     const hashedPassword = PasswordService.hashPassword(user.password, salt);
+    //     user.password = hashedPassword;
+    //     user.salt = salt;
 
-        const userId = await UserModel.createUser(user);
-        return this.generateToken({ id: userId });
-    }
+    //     const userId = await UserModel.createUser(user);
+    //     return this.generateToken({ id: userId });
+    // }
 
     async login(username: string, password: string): Promise<string> {
         const user = await UserModel.getUserByUserName(username);

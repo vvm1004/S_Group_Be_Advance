@@ -1,10 +1,12 @@
-import { connection } from '../database/config.ts';
-import { User, Role } from '../types'
+import { AppDataSource } from "../database/typeorm.config.ts";
+import { User } from "./entities/User.ts";
+import { Role } from "./entities/Role.ts";
+
 class UserModel {
     async getAllUsers(): Promise<User[]> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM user');
-            return rows as User[];
+            const userRepository = AppDataSource.getRepository(User);
+            return await userRepository.find({ relations: ["role"] });
         } catch (error) {
             throw new Error('Error fetching users: ' + error.message);
         }
@@ -12,8 +14,8 @@ class UserModel {
 
     async getAllRoles(): Promise<Role[]> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM role');
-            return rows as Role[];
+            const roleRepository = AppDataSource.getRepository(Role);
+            return await roleRepository.find();
         } catch (error) {
             throw new Error('Error fetching roles: ' + error.message);
         }
@@ -21,34 +23,28 @@ class UserModel {
 
     async getUserById(id: number): Promise<User | undefined> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM user WHERE id = ?', [id]);
-            return rows[0] as User;
+            const userRepository = AppDataSource.getRepository(User);
+            return await userRepository.findOne({ where: { id }, relations: ["role"] });
         } catch (error) {
             throw new Error('Error fetching user by ID: ' + error.message);
         }
     }
 
-    async createUser(user: User): Promise<number> {
-        try {
-            const { name, email, password, gender, age, username, salt, role_id } = user;
-            const [result] = await connection.execute(
-                'INSERT INTO user (name, email, password, gender, age, username, salt, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [name, email, password, gender, age, username, salt, role_id]
-            );
-            return (result as any).insertId;
-        } catch (error) {
-            throw new Error('Error creating user: ' + error.message);
-        }
-    }
+    // async createUser(user: Partial<User>): Promise<User> {
+    //     try {
+    //         const userRepository = AppDataSource.getRepository(User);
+    //         const newUser = userRepository.create(user);
+    //         return await userRepository.save(newUser);
+    //     } catch (error) {
+    //         throw new Error('Error creating user: ' + error.message);
+    //     }
+    // }
 
     async updateUser(id: number, user: Partial<User>): Promise<boolean> {
         try {
-            const { name, email, password, gender, age, salt, resetToken, resetTokenExpiration } = user;
-            const [result] = await connection.execute(
-                'UPDATE user SET name = ?, email = ?, password = COALESCE(?, password), gender = ?, age = ?, salt = COALESCE(?, salt), resetToken = ?, resetTokenExpiration = ? WHERE id = ?',
-                [name, email, password, gender, age, salt, resetToken, resetTokenExpiration, id]
-            );
-            return (result as any).affectedRows > 0;
+            const userRepository = AppDataSource.getRepository(User);
+            await userRepository.update(id, user);
+            return true;
         } catch (error) {
             throw new Error('Error updating user: ' + error.message);
         }
@@ -56,8 +52,9 @@ class UserModel {
 
     async deleteUser(id: number): Promise<boolean> {
         try {
-            const [result] = await connection.execute('DELETE FROM user WHERE id = ?', [id]);
-            return (result as any).affectedRows > 0;
+            const userRepository = AppDataSource.getRepository(User);
+            await userRepository.delete(id);
+            return true;
         } catch (error) {
             throw new Error('Error deleting user: ' + error.message);
         }
@@ -65,8 +62,8 @@ class UserModel {
 
     async getUserByUserName(username: string): Promise<User | undefined> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM user WHERE username = ?', [username]);
-            return rows[0] as User;
+            const userRepository = AppDataSource.getRepository(User);
+            return await userRepository.findOne({ where: { username } });
         } catch (error) {
             throw new Error('Error fetching user by username: ' + error.message);
         }
@@ -74,20 +71,18 @@ class UserModel {
 
     async getUserByEmail(email: string): Promise<User | undefined> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM user WHERE email = ?', [email]);
-            return rows[0] as User;
+            const userRepository = AppDataSource.getRepository(User);
+            return await userRepository.findOne({ where: { email }, relations: ["role"] });
         } catch (error) {
             throw new Error('Error fetching user by email: ' + error.message);
         }
     }
 
-    async updateResetToken(id: number, restToken: string, resetTokenExpiration: Date): Promise<boolean> {
+    async updateResetToken(id: number, resetToken: string, resetTokenExpiration: Date): Promise<boolean> {
         try {
-            const [result] = await connection.execute(
-                'UPDATE user SET resetToken = ?, resetTokenExpiration = ? WHERE id = ?',
-                [restToken, resetTokenExpiration, id]
-            );
-            return (result as any).affectedRows > 0;
+            const userRepository = AppDataSource.getRepository(User);
+            await userRepository.update(id, { resetToken, resetTokenExpiration });
+            return true;
         } catch (error) {
             throw new Error('Error updating reset token: ' + error.message);
         }
@@ -95,11 +90,9 @@ class UserModel {
 
     async updatePassword(id: number, password: string, salt: string): Promise<boolean> {
         try {
-            const [result] = await connection.execute(
-                'UPDATE user SET password = ?, salt = ? WHERE id = ?',
-                [password, salt, id]
-            );
-            return (result as any).affectedRows > 0;
+            const userRepository = AppDataSource.getRepository(User);
+            await userRepository.update(id, { password, salt });
+            return true;
         } catch (error) {
             throw new Error('Error updating password: ' + error.message);
         }
@@ -107,8 +100,8 @@ class UserModel {
 
     async getUserByResetToken(resetToken: string): Promise<User | undefined> {
         try {
-            const [rows] = await connection.execute('SELECT * FROM user WHERE resetToken = ?', [resetToken]);
-            return rows[0] as User;
+            const userRepository = AppDataSource.getRepository(User);
+            return await userRepository.findOne({ where: { resetToken } });
         } catch (error) {
             throw new Error('Error fetching user by reset token: ' + error.message);
         }
